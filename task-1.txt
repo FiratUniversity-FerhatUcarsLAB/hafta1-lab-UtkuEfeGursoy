@@ -1,4 +1,253 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:250542005
+AD-SOYAD: utku efe gürsoy
 
-Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+gemini ai ilen birlikte cıkardıgımız pseudecode'nin son hali :
+// ========================================================================
+// ALGORİTMA: Kaynak Önerili, Kategori Tabanlı ve Başarı Odaklı Dinamik Sınav Planı Sistemi
+// NİHAİ SÜRÜM AMAÇ: Çalışılacak her konu için ilgili YouTube ders videosu linki
+//                  öneren, tamamlanan konuları derslerine göre kategorize
+//                  eden, puan ve ceza sistemiyle dinamik plan üreten,
+//                  motivasyon ve ilerleme takibi odaklı, tam kapsamlı bir
+//                  akıllı çalışma asistanı.
+// ========================================================================
+
+BAŞLA
+
+  // --------------------------------------------------------------------
+  // 1. SİSTEMİN DURUM (STATE) DEĞİŞKENLERİNİ TANIMLA
+  // --------------------------------------------------------------------
+  SistemDurumu = YENİ NESNE
+  SistemDurumu.MevcutPuan = 100
+  SistemDurumu.DusukPuanSiniri = 60
+  SistemDurumu.GunlukCezaPuani = 5
+  SistemDurumu.GunlukBonusPuani = 1
+  SistemDurumu.OncelikliKonular = BOŞ LİSTE
+  SistemDurumu.GunlukMaksimumCalismaSaati = 0
+  SistemDurumu.TamamlananGorevlerByDers = BOŞ SÖZLÜK // Örn: {"Matematik": [görev1, görev2]}
+
+  // --------------------------------------------------------------------
+  // 2. TEK SEFERLİK KURULUM PROSEDÜRÜ
+  // --------------------------------------------------------------------
+  PROSEDÜR SistemiBaslat:
+    EKRANA_YAZ("Akıllı Sınav Planı Sistemine Hoş Geldiniz!")
+    SınavTarihi = KULLANICIDAN_AL("Sınav tarihini girin (GG.AA.YYYY): ")
+    BugununTarihi = SİSTEM_TARİHİNİ_GETİR()
+    KonularListesi = BOŞ LİSTE
+
+    SÜRECE KULLANICI_KONU_EKLEMEYE_DEVAM_EDİYOR:
+      YeniKonu = YENİ NESNE
+      YeniKonu.DersAdi = KULLANICIDAN_AL("Konunun ait olduğu dersin adını girin (Örn: Matematik): ")
+      YeniKonu.Ad = KULLANICIDAN_AL("'" + YeniKonu.DersAdi + "' dersi için konu adını girin: ")
+      YeniKonu.OnemDerecesi = KULLANICIDAN_AL("Önem derecesi (1-10 arası): ")
+      YeniKonu.BilgiSeviyesi = KULLANICIDAN_AL("Bu konudaki bilgi seviyeniz (1-10 arası): ")
+      YeniKonu.TahminiCalismaSuresi = KULLANICIDAN_AL("Tahmini çalışma süresi (saat): ")
+      YeniKonu.KalanSure = YeniKonu.TahminiCalismaSuresi
+      KonularListesi.EKLE(YeniKonu)
+    BİTİR SÜRECE
+    
+    SistemDurumu.GunlukMaksimumCalismaSaati = KULLANICIDAN_AL("Günde kaç saat çalışabilirsiniz?: ")
+
+    SistemDurumu.OncelikliKonular = KonulariOnceliklendir(KonularListesi)
+    EKRANA_YAZ("Kurulum tamamlandı. Başlangıç Puanı: 100")
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 3. KONULARI ÖNCELİKLENDİRME PROSEDÜRÜ
+  // --------------------------------------------------------------------
+  PROSEDÜR KonulariOnceliklendir(KonularListesi):
+    HER Konu İÇİN KonularListesi:
+      BilgiEksikligi = 10 - Konu.BilgiSeviyesi
+      Konu.OncelikPuani = (Konu.OnemDerecesi * 1.5) + (BilgiEksikligi * 1.0)
+    BİTİR HER
+    RETURN KonularListesi.SIRALA(puan'a göre AZALAN)
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 4. YOUTUBE'DAN VİDEO LİNKİ GETİREN SEMBOLİK PROSEDÜR
+  // --------------------------------------------------------------------
+  PROSEDÜR YouTubeLinkiGetir(dersAdi, konuAdi):
+    AramaMetni = dersAdi + " " + konuAdi + " konu anlatımı"
+    EKRANA_YAZ("      -> YouTube'da '" + AramaMetni + "' için kaynak aranıyor...")
+    BulunanLink = DIŞ_VERİ_KAYNAĞINDAN_GETİR("YouTube", AramaMetni)
+
+    EĞER BulunanLink MEVCUTSA:
+      RETURN BulunanLink
+    DEĞİLSE:
+      RETURN "Uygun video bulunamadı."
+    BİTİR EĞER
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 5. GÜNLÜK PLANI OLUŞTURAN NİHAİ PROSEDÜR
+  // --------------------------------------------------------------------
+  PROSEDÜR GunlukPlaniOlustur(gununTarihi):
+    GunlukPlan = YENİ GÜNLÜK PLAN NESNESİ
+    OgunkiCalismaSaati = SistemDurumu.GunlukMaksimumCalismaSaati
+    CezaModu = HAYIR
+
+    EĞER SistemDurumu.MevcutPuan < SistemDurumu.DusukPuanSiniri:
+      CezaModu = EVET
+      EKRANA_YAZ("UYARI: Puanınız kritik seviyede! Bugüne ceza eklendi.")
+      OgunkiCalismaSaati = OgunkiCalismaSaati + 1
+      GunlukPlan.EKLE("CEZA GÖREVİ: 1 saat ek çalışma.")
+    BİTİR EĞER
+
+    SÜRECE OgunkiCalismaSaati > 0 VE SistemDurumu.OncelikliKonular BOŞ DEĞİLSE:
+      CalisilacakKonu = SistemDurumu.OncelikliKonular[0]
+      BuOturumSuresi = MİNİMUM(OgunkiCalismaSaati, CalisilacakKonu.KalanSure, 2)
+      
+      PlanSatiri = BuOturumSuresi + " saat => [" + CalisilacakKonu.DersAdi + "] " + CalisilacakKonu.Ad
+      VideoLinki = YouTubeLinkiGetir(CalisilacakKonu.DersAdi, CalisilacakKonu.Ad)
+      PlanSatiri = PlanSatiri + "\n      -> Önerilen Video: " + VideoLinki
+      GunlukPlan.EKLE(PlanSatiri)
+      
+      CalisilacakKonu.KalanSure = CalisilacakKonu.KalanSure - BuOturumSuresi
+      OgunkiCalismaSaati = OgunkiCalismaSaati - BuOturumSuresi
+      
+      EĞER CalisilacakKonu.KalanSure <= 0:
+        TamamlananKonu = SistemDurumu.OncelikliKonular.İLK_ELEMANI_SİL()
+        DersKategorisi = TamamlananKonu.DersAdi
+        EĞER SistemDurumu.TamamlananGorevlerByDers.ANAHTAR_İÇERMİYORSA(DersKategorisi):
+          SistemDurumu.TamamlananGorevlerByDers[DersKategorisi] = BOŞ LİSTE
+        BİTİR EĞER
+        
+        YeniTamamlananGorev = YENİ NESNE
+        YeniTamamlananGorev.Konu = TamamlananKonu
+        YeniTamamlananGorev.TamamlanmaTarihi = gununTarihi
+        SistemDurumu.TamamlananGorevlerByDers[DersKategorisi].EKLE(YeniTamamlananGorev)
+        
+        EKRANA_YAZ("TEBRİKLER! '" + TamamlananKonu.Ad + "' konusu tamamlandı!")
+      BİTİR EĞER
+    BİTİR SÜRECE
+
+    EĞER CezaModu == EVET VE SistemDurumu.OncelikliKonular BOŞ DEĞİLSE:
+      CezaKonusu = SistemDurumu.OncelikliKonular[0]
+      GunlukPlan.EKLE("CEZA GÖREVİ: [" + CezaKonusu.DersAdi + "] " + CezaKonusu.Ad + " konusundan 25 adet ek soru çöz.")
+    BİTİR EĞER
+    
+    RETURN GunlukPlan
+  BİTİR PROSEDÜR
+  
+  // --------------------------------------------------------------------
+  // 6. KULLANICI GERİ BİLDİRİMİNİ ALAN PROSEDÜR
+  // --------------------------------------------------------------------
+  PROSEDÜR GeriBildirimiIsle:
+    cevap = KULLANICIDAN_AL("Dünkü planı tamamladın mı? (Evet/Hayır): ")
+    EĞER cevap == "Hayır" VEYA cevap == "hayır":
+      SistemDurumu.MevcutPuan = SistemDurumu.MevcutPuan - SistemDurumu.GunlukCezaPuani
+      EKRANA_YAZ("Puanından " + SistemDurumu.GunlukCezaPuani + " eksildi. Yeni Puan: " + SistemDurumu.MevcutPuan)
+    DEĞİLSE EĞER cevap == "Evet" VEYA cevap == "evet":
+      EĞER SistemDurumu.MevcutPuan < 100:
+        SistemDurumu.MevcutPuan = SistemDurumu.MevcutPuan + SistemDurumu.GunlukBonusPuani
+      BİTİR EĞER
+      EKRANA_YAZ("Tebrikler! Puanına " + SistemDurumu.GunlukBonusPuani + " eklendi. Yeni Puan: " + SistemDurumu.MevcutPuan)
+    BİTİR EĞER
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 7. KATEGORİZE EDİLMİŞ GÖSTERİM PROSEDÜRÜ
+  // --------------------------------------------------------------------
+  PROSEDÜR TamamlananlariGoster:
+    EKRANA_YAZDIR("\n--- TAMAMLANAN KONULAR LİSTESİ (Derslere Göre) ---")
+    EĞER SistemDurumu.TamamlananGorevlerByDers BOŞ İSE:
+      EKRANA_YAZDIR("Henüz tamamlanmış bir konu bulunmuyor.")
+    DEĞİLSE:
+      HER DersAdi İÇİN SistemDurumu.TamamlananGorevlerByDers.ANAHTARLARI:
+        EKRANA_YAZDIR("\n===== DERS: " + DersAdi.BÜYÜK_HARF_YAP() + " =====")
+        GorevListesi = SistemDurumu.TamamlananGorevlerByDers[DersAdi]
+        HER gorev İÇİN GorevListesi:
+          EKRANA_YAZDIR("  - " + gorev.Konu.Ad + " (Tamamlanma Tarihi: " + gorev.TamamlanmaTarihi + ")")
+        BİTİR HER
+      BİTİR HER
+    BİTİR EĞER
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 8. ANA SİSTEM DÖNGÜSÜ (Nihai Kullanıcı Menüsü)
+  // --------------------------------------------------------------------
+  ANA KISIM:
+    SistemiBaslat()
+    MevcutGun = BugununTarihi
+    CalismaDevamEdiyor = EVET
+    
+    SÜRECE CalismaDevamEdiyor VE MevcutGun < SınavTarihi VE SistemDurumu.OncelikliKonular BOŞ DEĞİLSE:
+      EKRANA_YAZDIR("\n=============== AKILLI ÇALIŞMA ASİSTANI - ANA MENÜ ================")
+      EKRANA_YAZDIR("Mevcut Puan: " + SistemDurumu.MevcutPuan + " | Tarih: " + MevcutGun)
+      EKRANA_YAZDIR("1. Bugünün Çalışma Planını ve Video Önerilerini Görüntüle")
+      EKRANA_YAZDIR("2. Tamamlanan Konuları Derslere Göre Listele")
+      EKRANA_YAZDIR("3. Çıkış")
+      KullaniciSecimi = KULLANICIDAN_AL("Seçiminiz: ")
+      
+      EĞER KullaniciSecimi == "1":
+        EKRANA_YAZDIR("-----------------------------------------")
+        EKRANA_YAZDIR(MevcutGun + " TARİHLİ PLANINIZ:")
+        BugununPlani = GunlukPlaniOlustur(MevcutGun)
+        EKRANA_YAZDIR(BugununPlani)
+        GeriBildirimiIsle()
+        MevcutGun = MevcutGun + 1
+      DEĞİLSE EĞER KullaniciSecimi == "2":
+        TamamlananlariGoster()
+      DEĞİLSE EĞER KullaniciSecimi == "3":
+        CalismaDevamEdiyor = HAYIR
+        EKRANA_YAZDIR("Sistem kapatılıyor. Sınavda başarılar!")
+      DEĞİLSE:
+        EKRANA_YAZDIR("Geçersiz seçim. Lütfen tekrar deneyin.")
+      BİTİR EĞER
+    BİTİR SÜRECE
+    
+    EKRANA_YAZ("--- PROGRAM SONLANDI. TÜM HEDEFLERİNİZE ULAŞTINIZ VEYA SINAV GÜNÜ GELDİ! ---")
+  BİTİR ANA KISIM
+
+BİTİR
+________________________________________________________________________________
+ALGORİTMA HAKKINDA TARTIŞMA:
+bu algoritma belki daha dinamik ve yenilikçi çözümler eklenerek yapay zeka destekli soru çözüm uzmanı veya konunun önemli noktalarını yapay zeka yardımı ilen çıkarıp gösteren bir hale getirile bilinirdi ancak benim görüşüme göre şuan yapay zeka (pro sürümler dahil olmaya bilir) bu işlemler için gerektiği kadar yetkin değil.
+_________________________________________________________________________________
+GEMİNİ PRO İLEN YAPTIĞIM GÖRÜŞMENİN GEÇMİŞİ:
+ Bir algoritma uzmanı olarak bu talebinizi ele alarak, bu mesajınızdan itibaren aramızdaki konuşma geçmişini adım adım özetleyeceğim. Bu özet, aslında tam olarak istediğiniz "Sınav Çalışma Planı Algoritması"nı sıfırdan başlayarak nasıl birlikte geliştirdiğimizi ve son haline getirdiğimizi gösterecek.
+
+İşte bu talebinizle başlayan geliştirme sürecimiz:
+
+---
+
+### Konuşma Geçmişi ve Algoritma Geliştirme Süreci
+
+**Adım 1: Temel Algoritma Talebi (Bu Mesajınız)**
+
+* **Sizin İsteğiniz:** "Bir algoritma uzmanı gibi düşünmeni istiyorum ve Sınav çalışma planı oluşturma algoritması hakkında koşullu şartlarda kendini tekrar eden detaylı ve sade bir pseudocode çıkarmak istiyorum yazmama yardımcı olur musun?"
+* **Benim Cevabım:** Bu talebiniz üzerine, algoritmanın temel felsefesini (Önceliklendirme, Böl ve Yönet, Döngüsel Tekrar) belirledim. Ardından şu yeteneklere sahip temel bir pseudocode oluşturdum:
+    * Kullanıcıdan konuları, önem derecelerini, bilgi seviyelerini ve mevcut zamanı girdi olarak aldı.
+    * Konulara bir "Öncelik Puanı" atayarak en önemli ve en zayıf konuları başa alan bir sıralama yaptı.
+    * Belirli günlerde (örneğin her 4 günde bir) eski konuların tekrar edilmesi için **koşullu bir şart** içeren, sınav gününe kadar **kendini tekrar eden** bir ana döngü ile günlük planlar oluşturdu.
+
+**Adım 2: Puan ve Ceza Sistemi (Oyunlaştırma)**
+
+* **Sizin İsteğiniz:** "Bu algoritmanın üzerine bir puan sistemi ekle. Başlangıç puanı 100, kritik eşik 60 olsun. Plana uyulmayan her gün için 5 puan eksilsin ve puan 60'ın altına düşerse, ertesi günün planına ceza olarak ek soru veya ek çalışma saati eklensin."
+* **Benim Cevabım:** Algoritmayı statik bir plan oluşturucudan, interaktif ve dinamik bir sisteme dönüştürdüm.
+    * `MevcutPuan` adında bir durum değişkeni ekledim.
+    * Algoritmanın yapısını, tüm planı tek seferde oluşturmak yerine, her gün için ayrı ayrı plan üretecek ve kullanıcıdan geri bildirim alacak şekilde değiştirdim.
+    * Puan 60'ın altına düştüğünde devreye giren bir `CezaModu` mantığı ekledim. Bu mod aktif olduğunda, bir sonraki günün planına otomatik olarak ek çalışma süresi ve ek soru görevleri eklendi. Plana uymanın ödülü olarak da küçük bir bonus puan sistemi ekledim.
+
+**Adım 3: İlerleme Takibi**
+
+* **Sizin İsteğiniz:** "Kullanıcının tamamladığı konuların bir listesini, hangi gün tamamlandığı bilgisiyle birlikte tut. Kullanıcı istediği zaman bu listeyi görebilsin. Üzerine kendi yorumunu da ekle."
+* **Benim Cevabım:** Algoritmaya bir "başarı günlüğü" özelliği ekledim ve bu özelliğin motivasyon ve stratejik tekrar için önemini vurguladım.
+    * Tamamlanan konuları ve tamamlanma tarihlerini saklamak için yeni bir veri yapısı oluşturdum.
+    * Sistemin ana döngüsüne, kullanıcıya ne yapmak istediğini soran bir **Ana Menü** ekledim. Kullanıcı artık "Bugünün Planını Gör" veya "Tamamlanan Konuları Listele" seçeneklerinden birini seçebiliyordu.
+
+**Adım 4: Kategorizasyon ve Düzen**
+
+* **Sizin İsteğiniz:** "Tamamlanan konular listesi karmaşık gözüküyor. Bu listeyi, kullanıcının en başta girdiği derslere göre kategorilere ayır."
+* **Benim Cevabım:** Algoritmanın veri yapısını ve kullanıcı deneyimini daha da iyileştirdim.
+    * En baştaki konu giriş ekranına, her konunun ait olduğu "Ders Adı"nı soran bir adım ekledim.
+    * Tamamlanan konuları saklayan veri yapısını, ders adlarının anahtar olduğu bir "sözlük" (dictionary) yapısına dönüştürdüm.
+    * "Tamamlananları Göster" fonksiyonunu, bitirilen konuları "Matematik", "Fizik" gibi başlıklar altında gruplayarak gösterecek şekilde tamamen yeniden yazdım.
+
+**Adım 5: Kaynak Entegrasyonu (Son Dokunuş)**
+
+* **Sizin İsteğiniz:** "Son fikir: Ders ve konu verileriyle alakalı YouTube ders videolarının linkini çekip plana ekleyelim."
+* **Benim Cevabım:** Algoritmayı, dış kaynaklarla entegre olarak çalışan akıllı bir asistana dönüştürdüm.
+    * Dış bir servisten (YouTube) veri çekme işlemini simüle eden sembolik bir `YouTubeLinkiGetir` prosedürü oluşturdum.
+    * Günlük plan oluşturma prosedürünü güncelledim. Artık her çalışma görevinin altına, o ders ve konuyla ilgili otomatik olarak bulunan bir "Önerilen Video" linki ekleniyordu.
+
+Bu beş adımlık süreç, basit bir plan oluşturma fikrinden yola çıkarak; oyunlaştırma, ilerleme takibi, kategorizasyon ve dış kaynak entegrasyonu gibi gelişmiş özelliklere sahip, kapsamlı bir akıllı çalışma asistanı algoritmasına ulaşmamızı sağladı.
