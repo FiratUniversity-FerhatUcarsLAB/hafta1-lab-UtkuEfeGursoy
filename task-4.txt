@@ -1,4 +1,192 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:250542005
+AD-SOYAD:Utku Efe Gürsoy
 
 Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+// ========================================================================
+// ALGORİTMA: HibritBolVeFethet_RotaOptimizasyonu
+// AMAÇ: Otobüs duraklarını coğrafi olarak kümelere ayırarak (Böl), her
+//       küme içindeki rotayı verimli bir şekilde çözerek (Fethet) ve
+//       bu alt rotaları akıllıca birleştirerek (Birleştir) toplam
+//       rotayı optimize etmek.
+// ========================================================================
+
+BAŞLA
+
+  // --------------------------------------------------------------------
+  // 1. TEMEL VERİ YAPILARI
+  // --------------------------------------------------------------------
+  YAPI Durak:
+    ID: SAYI
+    Ad: METİN
+    X_Koordinati: SAYI
+    Y_Koordinati: SAYI
+  BİTİR YAPI
+
+  // Rota, sıralı bir Durak listesidir.
+  Rota = LİSTE (Durak nesneleri içerecek)
+  
+  // BÖLME EŞİĞİ: Bir kümedeki durak sayısı bu değerin altına düşerse,
+  // özyineleme durur ve basit bir algoritma kullanılır.
+  SABİT ESIK_DEGERI = 10
+
+  // --------------------------------------------------------------------
+  // 2. ANA OPTİMİZASYON PROSEDÜRÜ (Özyinelemeli)
+  // --------------------------------------------------------------------
+  PROSEDÜR OptimizeEt(DuraklarListesi):
+  
+    // --- TEMEL DURUM (BASE CASE): Dezavantajları minimize etme noktası ---
+    // Eğer durak sayısı eşik değerinden az ise, Böl ve Fethet'e devam etme.
+    // O küçük grup için hızlı ve basit bir algoritma kullan.
+    EĞER DuraklarListesi.BOYUTU <= ESIK_DEGERI:
+      EKRANA_YAZ(DuraklarListesi.BOYUTU + " duraklı küçük grup En Yakın Komşu ile çözülüyor...")
+      RETURN EnYakinKomsuIleCoz(DuraklarListesi)
+    BİTİR EĞER
+
+    // --- 1. ADIM: BÖL (DIVIDE) ---
+    // Durakları coğrafi olarak iki mantıksal kümeye ayır.
+    EKRANA_YAZ(DuraklarListesi.BOYUTU + " duraklı grup ikiye bölünüyor...")
+    (Kume1, Kume2) = DuraklariCografiOlarakBol(DuraklarListesi)
+    
+    // --- 2. ADIM: FETHET (CONQUER) ---
+    // Her bir küme için optimizasyon prosedürünü tekrar çağır (özyineleme).
+    EKRANA_YAZ("  -> Alt problemler çözülüyor...")
+    Rota1 = OptimizeEt(Kume1)
+    Rota2 = OptimizeEt(Kume2)
+    
+    // --- 3. ADIM: BİRLEŞTİR (COMBINE) ---
+    // İki alt rotayı, en verimli şekilde birleştir.
+    EKRANA_YAZ("  -> Alt rotalar birleştiriliyor...")
+    NihaiRota = RotalariBirlestir(Rota1, Rota2)
+    
+    RETURN NihaiRota
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 3. YARDIMCI PROSEDÜRLER
+  // --------------------------------------------------------------------
+
+  // "Temel Durum"da çalışan basit ve hızlı algoritma
+  PROSEDÜR EnYakinKomsuIleCoz(Duraklar):
+    // Bu algoritma, en kısa yolu garanti etmez ama çok hızlıdır ve küçük gruplar için yeterlidir.
+    BaslangicDuragi = Duraklar[0]
+    ZiyaretEdilmemisler = Duraklar listesinin kopyası
+    MevcutRota = BOŞ ROTA
+    MevcutRota.EKLE(BaslangicDuragi)
+    ZiyaretEdilmemisler.SİL(BaslangicDuragi)
+    
+    MevcutDurak = BaslangicDuragi
+    SÜRECE ZiyaretEdilmemisler BOŞ DEĞİLSE:
+      EnYakinDurak = ZiyaretEdilmemisler listesindeki MevcutDurak'a en yakın olanı bul
+      MevcutRota.EKLE(EnYakinDurak)
+      ZiyaretEdilmemisler.SİL(EnYakinDurak)
+      MevcutDurak = EnYakinDurak
+    BİTİR SÜRECE
+    
+    RETURN MevcutRota
+  BİTİR PROSEDÜR
+
+  // Durakları coğrafi olarak bölen prosedür
+  PROSEDÜR DuraklariCografiOlarakBol(Duraklar):
+    // Basit bir yöntem: En geniş ekseni (X veya Y) bul ve durakları o eksenin ortasından ikiye ayır.
+    // ... (Burada durakları iki gruba ayıran coğrafi mantık yer alır) ...
+    RETURN (GrupA, GrupB)
+  BİTİR PROSEDÜR
+
+  // İki optimize edilmiş alt rotayı birleştiren prosedür
+  PROSEDÜR RotalariBirlestir(RotaA, RotaB):
+    EnKisaToplamMesafe = SONSUZ
+    EnIyiBirlestirmeNoktalari = null
+
+    // Olası en iyi birleştirme noktasını bulmak için her durak çiftini kontrol et.
+    // RotaA'daki bir durak ile RotaB'deki bir durak arasındaki en kısa bağlantıyı arıyoruz.
+    HER DurakA İÇİN RotaA:
+      HER DurakB İÇİN RotaB:
+        Mesafe = DurakA ve DurakB arasındaki uzaklığı hesapla
+        EĞER Mesafe < EnKisaToplamMesafe:
+          EnKisaToplamMesafe = Mesafe
+          EnIyiBirlestirmeNoktalari = (DurakA, DurakB)
+        BİTİR EĞER
+      BİTİR HER
+    BİTİR HER
+    
+    // ... (Burada RotaA ve RotaB, bulunan en iyi birleştirme noktaları kullanılarak
+    //      tek bir NihaiRota'ya dönüştürülür. Bu, iki halkayı kesip birleştirmeye benzer.) ...
+    
+    RETURN NihaiRota
+  BİTİR PROSEDÜR
+  
+  // --------------------------------------------------------------------
+  // ANA KISIM
+  // --------------------------------------------------------------------
+  ANA KISIM:
+    TumDuraklar = VeritabanindanVeyaDosyadanYukle()
+    EKRANA_YAZ("Otobüs Rotası Optimizasyonu Başlatılıyor...")
+    EKRANA_YAZ("Toplam Durak Sayısı: " + TumDuraklar.BOYUTU)
+    
+    EĞER TumDuraklar BOŞ DEĞİLSE:
+      OptimizeEdilmisRota = OptimizeEt(TumDuraklar)
+      EKRANA_YAZ("\n--- Optimizasyon Tamamlandı! ---")
+      EKRANA_YAZ("En Verimli Rota:")
+      // Sonucu göster
+      OptimizeEdilmisRota.HER_BİRİ_İÇİN(durak => EKRANA_YAZ(durak.Ad))
+    DEĞİLSE:
+      EKRANA_YAZ("Optimize edilecek durak bulunamadı.")
+    BİTİR EĞER
+  BİTİR ANA KISIM
+
+BİTİR
+__________________________________________________________________
+Bu optimize uygulamasını böl ve fethet mantığına entegre edicek en zor uygulama olucağını düşünüyordum çünkü kullanıcı onlarca durak girebilir ve bizim sınırlı kaynak yönetimiyle bunu çözmemiz gerekiyordu. Ben bu sorunun çözümünü düşünürken aslında yapay zeka bana bu sorunun cevabını verdi yakın durakları 10lu kümeleyerek böl ve fethet yapmak ama bu versiyonunda bir eksiği vardı en yakın rotadan biraz daha fazla uzaklıktaki rotayı seçiyordu çünkü en yakın durak belkide o 10'lu kümenin içerisinde değildi ve en sonunda birleştirerek en optimum versiyonunu verdi benim seçimim sınırlı kaynak tüketiminden dolayı kümeli versiyon oldu.
+____________________________________________________________________
+Aİ İLEN YAPTIĞIM GÖRÜŞME GEÇMİŞİ:
+Böl ve Fethet Projesi Konuşma Geçmişi
+Adım 1: Böl ve Fethet Kavramının Anlaşılması
+
+Sizin Talebiniz:
+
+"bana böl ve fethet (divide-conquer) mantığını açıklar mısın detaylı ve sade bir şekilde"
+
+Benim Cevabım:
+
+Bir algoritma uzmanı olarak, konsepti ilk önce "sözlükte kelime arama" gibi sade bir analoji ile açıkladım.
+
+Ardından, stratejinin detaylı ve teknik tanımını üç temel adımda sundum:
+
+Böl (Divide): Problemi küçük alt problemlere ayırma.
+
+Fethet (Conquer): Alt problemleri özyinelemeli (recursive) olarak çözme.
+
+Birleştir (Combine): Çözümleri ana problemin sonucunu oluşturacak şekilde bir araya getirme.
+
+Merge Sort, Quick Sort ve Binary Search gibi klasik örneklerle konuyu pekiştirdim ve son olarak stratejinin avantajları ile dezavantajlarını listeledim.
+
+Adım 2: Hibrit Algoritma Tasarımı: Rota Optimizasyonu
+
+Sizin Talebiniz:
+
+"bu konuştuğumuz böl ve fethet mantığı ilen bir Otobüs rotası optimizasyonu uygulaması yapmak istiyorum ama böl ve fethet mantığının dezavantajlarını minimilize edilmiş halde olsun, açıklayıcı olsun bana bunun pseudocode'sini yazmama yardım eder misin?"
+
+Benim Cevabım:
+
+İlk olarak, saf bir Böl ve Fethet yaklaşımının rota optimizasyonu gibi karmaşık problemler için neden ideal olmadığını uzman yorumumla açıkladım. Özellikle "Birleştir" adımının optimal sonuçlar vermeyebileceğini belirttim.
+
+Bu dezavantajları minimize etmek için hibrit bir çözüm önerdim:
+
+Özyineleme/Hafıza sorununu çözmek için: Belirli bir durak sayısının (ESIK_DEGERI) altına düşüldüğünde özyinelemeyi durdurup, daha hızlı ve basit bir "En Yakın Komşu" algoritmasını devreye sokan bir yapı tasarladım.
+
+"Birleştir" sorununu çözmek için: Problemi, rotaları bölmek yerine, durakları coğrafi olarak kümelemek olarak yeniden çerçeveledim.
+
+Bu hibrit mantığa dayanan "Hibrit Böl ve Fethet ile Rota Optimizasyonu" pseudocode'unun tam halini, tüm yardımcı prosedürleri ve açıklamalarıyla birlikte size sundum.
+
+Adım 3: Projenin Sonlandırılması
+
+Sizin Talebiniz:
+
+"bitir"
+
+Benim Cevabım: Bu komutunuzla birlikte, projemizin geliştirme sürecini tamamlamış olduk ve size bu özeti sunuyorum.
+
+Bu iş birliğimizde, teorik bir konsepti alıp, onun pratik hayattaki zorluklarına karşı güçlendirilmiş, akıllı ve verimli bir algoritma taslağına dönüştürdük.
+
+
+
