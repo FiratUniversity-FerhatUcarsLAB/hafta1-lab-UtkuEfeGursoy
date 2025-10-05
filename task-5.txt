@@ -1,4 +1,245 @@
-Öğrenci No:
-AD-SOYAD:
+Öğrenci No:250542005
+AD-SOYAD:Utku Efe Gürsoy
 
 Lütfen seçtiğiniz algoritmaya ait çözümü ve diğer isterleri aşağıya ekleyiniz:
+// ========================================================================
+// ALGORİTMA: Kişiselleştirilmiş Keşif Platformu
+// NİHAİ AMAÇ: Kullanıcı profili oluşturarak kişiselleştirilmiş öneriler
+//             sunan, akıllı filtreleme ve atmosfer analizi yapan,
+//             ve kullanıcının ilgi alanlarına göre hedefli reklamlar
+//             gösteren akıllı bir mekan önerme asistanı.
+// ========================================================================
+
+BAŞLA
+
+  // --------------------------------------------------------------------
+  // 1. GELİŞTİRİLMİŞ VERİ YAPILARI
+  // --------------------------------------------------------------------
+  
+  // YENİLİK: Mekan yapısı, filtreleme ve analiz için yeni alanlar içeriyor.
+  YAPI Yer:
+    Ad: METİN
+    Kategori: METİN
+    Puan: ONDALIKLI SAYI
+    Adres: METİN
+    TelefonNumarasi: METİN
+    WebsiteLinki: METİN
+    FiyatAraligi: METİN // Örn: "$", "$$", "$$$"
+    AcikMi: MANTIKSAL // EVET/HAYIR
+    Etiketler: METİN LİSTESİ // Örn: ["romantik", "aile dostu", "hızlı servis"]
+  BİTİR YAPI
+
+  // YENİLİK: Kullanıcının tercihlerini ve geçmişini tutan yapı.
+  YAPI KullaniciProfili:
+    GecmisAramalar: METİN LİSTESİ
+    FavoriKategoriler: SÖZLÜK // Örn: {"Restoran": 5, "Kafe": 3} - arama sayısını tutar
+    YemekAramaGecmisi: SÖZLÜK // Örn: {"pizza": 4, "burger": 2} - yemek türü arama sayısını tutar
+  BİTİR YAPI
+
+  // --------------------------------------------------------------------
+  // 2. YARDIMCI VE YENİ PROSEDÜRLER
+  // --------------------------------------------------------------------
+
+  // YENİLİK: Her aramadan sonra kullanıcı profilini güncelleyen prosedür.
+  PROSEDÜR ProfiliGuncelle(profil, aramaTerimi):
+    profil.GecmisAramalar.EKLE(aramaTerimi)
+    // Basit bir analizle kategorileri ve yemekleri ayrıştıralım
+    // Gerçek bir uygulamada bu daha gelişmiş bir metin analizi gerektirir.
+    EĞER aramaTerimi.İÇERİYOR("restoran"):
+      profil.FavoriKategoriler["Restoran"] += 1
+    DEĞİLSE EĞER aramaTerimi.İÇERİYOR("kafe"):
+      profil.FavoriKategoriler["Kafe"] += 1
+    BİTİR EĞER
+    
+    EĞER aramaTerimi.İÇERİYOR("pizza"):
+      profil.YemekAramaGecmisi["pizza"] += 1
+    DEĞİLSE EĞER aramaTerimi.İÇERİYOR("burger"):
+      profil.YemekAramaGecmisi["burger"] += 1
+    BİTİR EĞER
+  BİTİR PROSEDÜR
+
+  // YENİLİK: Kullanıcı profiline göre hedefli reklam gösteren prosedür.
+  PROSEDÜR ReklamGoster(profil):
+    EĞER profil.YemekAramaGecmisi BOŞ DEĞİLSE:
+      EnCokArananYemek = profil.YemekAramaGecmisi'ndeki en yüksek değerli anahtarı bul
+      
+      // Sembolik bir reklam servisi çağrısı
+      ReklamMetni = DIŞ_REKLAM_SERVİSİNDEN_GETİR("yemek", EnCokArananYemek)
+      
+      EKRANA_YAZ("\n================ ÖZEL TEKLİF ================")
+      EKRANA_YAZ(ReklamMetni) // Örn: "Pizza sever misiniz? Şehrin en iyi pizzacısında %20 indirim!"
+      EKRANA_YAZ("========================================\n")
+    BİTİR EĞER
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 3. ANA İŞLEVİ YERİNE GETİREN GELİŞMİŞ PROSEDÜR
+  // --------------------------------------------------------------------
+  PROSEDÜR IhtiyacaGoreYerleriBulVeListele(sehir, ihtiyac, filtreler, profil):
+    EKRANA_YAZ("'" + sehir + "' şehrindeki '" + ihtiyac + "' için kişiselleştirilmiş sonuçlar aranıyor...")
+  
+    // Adım 1: Filtreleri de içeren sorguyu oluştur
+    AramaSorgusu = sehir + " " + ihtiyac + " " + filtreler.ToString()
+    
+    // Adım 2: Dış Servisten Veri Çek
+    HamVeriListesi = DIŞ_VERİ_SERVİSİNDEN_GETİR("Google Maps API", AramaSorgusu)
+    // ... (Sonuç bulunamadıysa çıkış mantığı aynı) ...
+    
+    // Adım 3: Ham Veriyi Kendi Gelişmiş Yapımıza Dönüştür
+    YerListesi = BOŞ LİSTE
+    HER hamYer İÇİN HamVeriListesi:
+      YeniYer = YENİ Yer NESNESİ
+      // ... (Ad, Puan, Adres, Telefon, Websitesi doldurulur) ...
+      YeniYer.FiyatAraligi = hamYer.fiyat
+      YeniYer.AcikMi = hamYer.acik_mi_bilgisi
+      
+      // YENİLİK: Atmosfer Analizi
+      YeniYer.Etiketler = BOŞ LİSTE
+      HER yorum İÇİN hamYer.yorumlar:
+        EĞER yorum.İÇERİYOR("romantik"): YeniYer.Etiketler.EKLE("Romantik")
+        EĞER yorum.İÇERİYOR("aile"): YeniYer.Etiketler.EKLE("Aile Dostu")
+        EĞER yorum.İÇERİYOR("sakin"): YeniYer.Etiketler.EKLE("Sakin")
+      BİTİR HER
+      
+      YerListesi.EKLE(YeniYer)
+    BİTİR HER
+    
+    // YENİLİK: Kişiselleştirme için Puanları Ayarla
+    HER yer İÇİN YerListesi:
+      EĞER profil.FavoriKategoriler.İÇERİYOR(yer.Kategori):
+        // Kullanıcının favori kategorisindeyse puana küçük bir bonus ekle
+        yer.Puan = yer.Puan + 0.2 
+      BİTİR EĞER
+    BİTİR HER
+    
+    // Adım 4: Listeyi Puana Göre Çoktan Aza Sırala
+    SıralanmışListe = YerListesi.SIRALA(Yer.Puan'a göre AZALAN)
+    
+    // Adım 5: Zenginleştirilmiş Sonuçları Kullanıcıya Sun
+    EKRANA_YAZ("\n--- İşte Size Özel Öneriler (Puana Göre Sıralanmıştır) ---")
+    SiraNo = 1
+    HER yer İÇİN SıralanmışListe:
+      EKRANA_YAZ("\n" + SiraNo + ". " + yer.Ad.BÜYÜK_HARF_YAP())
+      EKRANA_YAZ("   Puan: " + yer.Puan + " / 5.0 | Fiyat: " + yer.FiyatAraligi)
+      
+      // YENİLİK: Etiketleri göster
+      EĞER yer.Etiketler BOŞ DEĞİLSE:
+        EKRANA_YAZ("   Atmosfer: " + yer.Etiketler.ToString())
+      BİTİR EĞER
+      
+      // ... (Adres, Telefon, Websitesi gösterme mantığı aynı) ...
+      SiraNo = SiraNo + 1
+    BİTİR HER
+  BİTİR PROSEDÜR
+
+  // --------------------------------------------------------------------
+  // 4. ANA SİSTEM DÖNGÜSÜ (Gelişmiş Arayüz)
+  // --------------------------------------------------------------------
+  ANA KISIM:
+    EKRANA_YAZ("=============== KİŞİSELLEŞTİRİLMİŞ MEKAN ÖNERİ ASİSTANI ================")
+    // YENİLİK: Kullanıcı profili oluşturuluyor
+    AktifKullaniciProfili = YENİ KullaniciProfili
+    
+    KullanicininSehri = KULLANICIDAN_AL("Hangi şehir için öneri istersiniz?: ")
+    
+    SistemCalisiyor = EVET
+    SÜRECE SistemCalisiyor:
+      // YENİLİK: Her döngü başında kullanıcıya özel reklam gösterilir
+      ReklamGoster(AktifKullaniciProfili)
+
+      KullanicininIhtiyaci = KULLANICIDAN_AL("Lütfen ihtiyacınızı belirtin ('çıkış' yazabilirsiniz): ")
+      
+      EĞER KullanicininIhtiyaci.KÜÇÜK_HARF_YAP() == "çıkış":
+        SistemCalisiyor = HAYIR
+        EKRANA_YAZ("Asistan kapatılıyor. İyi günler!")
+        BREAK // Döngüden çık
+      BİTİR EĞER
+      
+      // YENİLİK: Akıllı Filtreleme için ek bilgiler alınır
+      Filtreler = YENİ NESNE
+      Filtreler.Fiyat = KULLANICIDAN_AL("Fiyat aralığı tercihin var mı? (Ucuz, Orta, Pahalı, Boş bırak): ")
+      Filtreler.Durum = KULLANICIDAN_AL("Sadece şu an açık olanları mı görmek istersin? (Evet, Hayır): ")
+      
+      // Ana işlevi güncellenmiş parametrelerle çağır
+      IhtiyacaGoreYerleriBulVeListele(KullanicininSehri, KullanicininIhtiyaci, Filtreler, AktifKullaniciProfili)
+      
+      // YENİLİK: Aramayı profile kaydet
+      ProfiliGuncelle(AktifKullaniciProfili, KullanicininIhtiyaci)
+      
+    BİTİR SÜRECE
+    
+  BİTİR ANA KISIM
+
+BİTİR
+_____________________________________________________________
+Bu yazdırdığım şehir içi mekan uygulaması özellikle turistlik yerleri kapsayan yerlerde daha kullanışlı olucaktır ve veriyi birden çok platformdan alacağından dolayı sürekli güncel kalıcaktır tabiki bir çok yenilikçi fikirle farklı algoritmalar çıkarılabilir ama diğer algoritmalarda pek çok bilinmeyen hata ve açık olabilir elimden geldiğince bu algoritmadaki gördüğüm ve okuduğum kadarıyla minimilize edip paylaşmaya çalıştım.
+_____________________________________________________________
+Aİ İLEN KONUŞMA GEÇMİŞİM:
+Kişiselleştirilmiş Mekan Öneri Projesi Konuşma Geçmişi
+Adım 1: Proje Fikrinin Sunulması ve Temel Algoritma
+
+Sizin Talebiniz:
+
+"Kullanıcı tarafından adı verilen şehirdeki yerleri kullanıcıdan aldığı ihtiyaca göre google vb. yerlerden veri ve puan çekerek puanın çoktan aza listeleyen ve o yerlerin eğer bir kurumsa telefon numarası ve internet sitesi linkini kullanıcıya sunan bir uygulama tasarlamak istiyorum eğer yorumun varsa katabilirsin bu uygulamanın pseudocodesini verebilir misin?"
+
+Benim Cevabım:
+
+Fikrin pratik değerini vurgulayan bir uzman yorumu ile başladım. Dış servislere (API) olan bağımlılığa ve temiz bir veri yapısının önemine dikkat çektim.
+
+Bu temel ihtiyaçları karşılayan ilk pseudocode versiyonunu oluşturdum. Bu versiyon şu yeteneklere sahipti:
+
+Her mekanı temsil eden temel bir Yer veri yapısı.
+
+Dış bir servisten veri çekme işlemini simüle eden DIŞ_VERİ_SERVİSİNDEN_GETİR fonksiyonu.
+
+Gelen veriyi işleyen, puana göre çoktan aza sıralayan ve kullanıcıya sunan IhtiyacaGoreYerleriBulVeListele adında bir ana prosedür.
+
+Kullanıcıyla etkileşim kuran bir ana döngü.
+
+Adım 2: Yaratıcı Özellikler İçin Beyin Fırtınası
+
+Sizin Talebiniz:
+
+"çok güzel ama biraz yaratıcılıkda sorun yaşıyorum acaba bu algoritma için bir önerin var mı"
+
+Benim Cevabım:
+
+Uygulamayı standart bir arama motorundan daha özel bir hale getirecek dört yaratıcı özellik önerdim:
+
+Akıllı Filtreleme: Fiyat, o an açık olma durumu gibi daha spesifik kriterlerle arama yapma.
+
+Kişiselleştirme ("Uygulama Beni Tanısın"): Kullanıcının geçmiş aramalarından zevklerini öğrenme.
+
+"Beni Şaşırt!" Özelliği: Kararsız anlar için rastgele ve mantıklı öneriler sunma.
+
+Atmosfer Analizi: Yorumları analiz ederek mekanları "romantik", "aile dostu" gibi etiketlerle zenginleştirme.
+
+Her önerinin kullanıcıya faydasını ve pseudocode'a etkisini açıkladım.
+
+Adım 3: Gelişmiş Özelliklerin Entegrasyonu ve Nihai Algoritma
+
+Sizin Talebiniz:
+
+"fikirlerini beğendim akıllı filtreleme ,uygulama beni tanısın ve Atmosfer Analizi özelliğini eklemeni istiyorum ama uygulama beni tanısının üzerine bir reklam özelliği eklemeni istiyorum ve bu özellik en çok hangi yemek mekanlarında en çok hangi yemeklerle ilgili arama yapıyorsa ona göre şekillensin ve bana kodun en son ve tam halini paylaş"
+
+Benim Cevabım:
+
+Seçtiğiniz üç özelliği ve eklediğiniz hedefli reklam fikrini bir araya getiren, mimari olarak daha gelişmiş bir yapı tasarladım.
+
+Algoritmanın merkezine, tüm kişiselleştirme ve reklam mantığını besleyen bir KullaniciProfili veri yapısı yerleştirdim.
+
+Yeni Prosedürler Ekledim: ProfiliGuncelle ve kullanıcı profiline göre hedefli teklifler sunan ReklamGoster.
+
+Ana arama prosedürünü (IhtiyacaGoreYerleriBulVeListele), bu üç yeni özelliği (Filtreleme, Atmosfer Analizi, Kişiselleştirilmiş Puanlama) içerecek şekilde baştan yazdım.
+
+Tüm bu yetenekleri bir araya getiren "Kişiselleştirilmiş Keşif Platformu" adını verdiğim algoritmanın nihai ve tam halini size sundum.
+
+Adım 4: Projenin Sonlandırılması
+
+Sizin Talebiniz:
+
+"bitir"
+
+Benim Cevabım: Bu komutunuzla birlikte, projemizin geliştirme sürecini tamamlamış olduk ve size bu özeti sunuyorum.
+
+Bu iş birliğiyle, basit bir listeleme uygulamasından, kullanıcıyı tanıyan, ona akıllı öneriler ve teklifler sunan, zengin özelliklere sahip bir platform tasarımına ulaştık.
