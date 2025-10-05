@@ -1,7 +1,7 @@
 Öğrenci No:250542005
 AD-SOYAD: utku efe gürsoy
 
-GEMİİNİ Aİ İLEN YAZDIĞIMIZ ALGORİTMANIN SON HALİ :
+GEMİNİ Aİ İLEN YAZDIĞIMIZ ALGORİTMANIN SON HALİ :
 // ========================================================================
 // ALGORİTMA: Kaynak Önerili, Kategori Tabanlı ve Başarı Odaklı Dinamik Sınav Planı Sistemi
 // NİHAİ SÜRÜM AMAÇ: Çalışılacak her konu için ilgili YouTube ders videosu linki
